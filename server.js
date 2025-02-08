@@ -1,12 +1,11 @@
 const http = require('http');
 const url = require('url');
-
+let dictionary = {};
 let messages = require('./messages.js');
 
 
 class Server {
     constructor() {
-        this.dictionary ={};
         this.port = process.env.PORT || 3000;
     }
 
@@ -19,18 +18,19 @@ class Server {
 
             if (q.pathname === '/api/definitions') {
                 if (req.method === 'GET') {
-                    console.log(this.dictionary);
+                    console.log(dictionary);
                     let word = q.query.word;
-                    if ( this.dictionary[word] === undefined) {
+                    if ( dictionary[word] === undefined) {
                         res.writeHead(404, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ message: messages.userMessages.wordNotFound }));
                     } else {
                         res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ word: word, definition: this.dictionary[word] }));
+                        res.end(JSON.stringify({ word: word, definition: dictionary[word] }));
                     }
 
 
                 } else if (req.method === 'POST') {
+                    console.log(dictionary);
                     let body = "";
                     req.on('data', function (data) {
                         if (data != null)
@@ -42,8 +42,8 @@ class Server {
                         let word = q['word'];
                         let definition =q['definition'];
                         let resualt = '';
-                        if (word != null && definition != null && this.dictionary[word] === undefined) {
-                            this.dictionary[word] = definition;
+                        if (word != null && definition != null && dictionary[word] === undefined) {
+                            dictionary[word] = definition;
                             res.writeHead(200, { 'Content-Type': 'text/plain' });
                             resualt= messages.userMessages.wordAdded;
                         } else {
