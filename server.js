@@ -19,6 +19,9 @@ class Server {
                 if (req.method === 'GET') {
                     console.log(dictionary);
                     let word = q.query.word;
+                    console.log("word " + word);
+                    console.log("word2 " + dictionary[word]);
+
                     if ( dictionary[word] === undefined) {
                         res.writeHead(404, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ message: messages.userMessages.wordNotFound }));
