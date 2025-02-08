@@ -19,6 +19,7 @@ class Server {
 
             if (q.pathname === '/api/definitions') {
                 if (req.method === 'GET') {
+                    console.log(dictionary);
                     let word = q.query.word;
                     if ( dictionary[word] === undefined) {
                         res.writeHead(404, { 'Content-Type': 'application/json' });
