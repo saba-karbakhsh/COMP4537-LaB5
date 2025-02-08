@@ -2,11 +2,11 @@ const http = require('http');
 const url = require('url');
 
 let messages = require('./messages.js');
-let dictionary = {};
 
 
 class Server {
     constructor() {
+        this.dictionary ={};
         this.port = process.env.PORT || 3000;
     }
 
@@ -19,14 +19,14 @@ class Server {
 
             if (q.pathname === '/api/definitions') {
                 if (req.method === 'GET') {
-                    console.log(dictionary);
+                    console.log(this.dictionary);
                     let word = q.query.word;
-                    if ( dictionary[word] === undefined) {
+                    if ( this.dictionary[word] === undefined) {
                         res.writeHead(404, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ message: messages.userMessages.wordNotFound }));
                     } else {
                         res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ word: word, definition: dictionary[word] }));
+                        res.end(JSON.stringify({ word: word, definition: this.dictionary[word] }));
                     }
 
 
@@ -42,8 +42,8 @@ class Server {
                         let word = q['word'];
                         let definition =q['definition'];
                         let resualt = '';
-                        if (word != null && definition != null && dictionary[word] === undefined) {
-                            dictionary[word] = definition;
+                        if (word != null && definition != null && this.dictionary[word] === undefined) {
+                            this.dictionary[word] = definition;
                             res.writeHead(200, { 'Content-Type': 'text/plain' });
                             resualt= messages.userMessages.wordAdded;
                         } else {
