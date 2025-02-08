@@ -1,73 +1,61 @@
 const http = require('http');
 const url = require('url');
-const fs = require('fs');
-const dotenv = require('dotenv');
 
-dotenv.config();
+let messages = require('./messages.js');
+let dictionary = {};
+
 
 class Server {
     constructor() {
-        this.dictionary = [];
         this.port = process.env.PORT || 3000;
     }
 
     start() {
         http.createServer((req, res) => {
-
-            res.setHeader('Access-Control-Allow-Origin', '*');
-            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); 
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
             
-            if (req.method === 'OPTIONS') {
-                res.writeHead(204);
-                res.end();
-                return;
-            }
-            const parsedUrl = url.parse(req.url, true);
-            const { pathname, query } = parsedUrl;
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', '*');
+            let q = url.parse(req.url, true);
 
-            if (pathname === '/api/definitions') {
+            if (q.pathname === '/api/definitions') {
                 if (req.method === 'GET') {
-                    const word = query.word;
-                    if (!word) {
-                        this.sendResponse(res, 400, {message: 'No word provided'});
-                        return;
-                    }
-
-                    const entry = this.dictionary.find((entry) => entry.word === word);
-                    if (entry) {
-                        this.sendResponse(res, 200, { word: entry.word, definition: entry.definition });
+                    let word = q.query.word;
+                    if ( dictionary[word] === undefined) {
+                        res.writeHead(404, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ message: messages.userMessages.wordNotFound }));
                     } else {
-                        this.sendResponse(res, 404, { message: "word not found" });
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ word: word, definition: dictionary[word] }));
                     }
 
-                } else if (req.method === 'POST') {  
-                    let body = '';
-                    req.on('data', (chunk) => {
-                        body += chunk;
+
+                } else if (req.method === 'POST') {
+                    let body = "";
+                    req.on('data', function (data) {
+                        if (data != null)
+                            body += data;
                     });
 
-                    req.on("end", () => {
-                        try {
-                            const { word, definition } = JSON.parse(body);
-                            if (!word || !definition) {
-                                this.sendResponse(res, 400, { message: "word and definition are required" });
-                                return;
-                            }
-                            this.dictionary.push({ word, definition });
-                            this.sendResponse(res, 201, { message: 'Word added successfully' });
-                        } catch (error) {
-                            this.sendResponse(res, 400, { message: "Invalid JSON" });
+                    req.on('end', function () {
+                        let q = JSON.parse(body);
+                        let word = q['word'];
+                        let definition =q['definition'];
+                        let resualt = '';
+                        if (word != null && definition != null && dictionary[word] === undefined) {
+                            dictionary[word] = definition;
+                            res.writeHead(200, { 'Content-Type': 'text/plain' });
+                            resualt= messages.userMessages.wordAdded;
+                        } else {
+                            res.writeHead(201, { 'Content-Type': 'text/plain' });
+                            resualt = messages.userMessages.wordExist;
                         }
+                        res.end(JSON.stringify({ message: resualt }));
                     });
-
-                } else {
-                    this.sendResponse(res, 405, { message: "Method not allowed" });
                 }
 
             } else {
-                this.sendResponse(res, 404, { message: "Route not found" });
+                res.writeHead(404, { 'Content-Type': 'text/html' });
+                res.end(`<h1>${messages.userMessages.error}</h1>`);
             }
 
         }).listen(this.port, () => {
@@ -75,10 +63,7 @@ class Server {
         });
     }
 
-    sendResponse(res, status, body) {
-        res.writeHead(status, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(body));
-    }
+    
 }
 
 const server = new Server();
