@@ -2,6 +2,8 @@ const http = require('http');
 const url = require('url');
 let messages = require('./messages.js');
 let dictionary = {};
+let getReqCounter = 0;
+let postReqCounter = 0;
 
 
 class Server {
@@ -22,8 +24,9 @@ class Server {
                         res.writeHead(404, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ message: messages.userMessages.wordNotFound }));
                     } else {
+                        getReqCounter++;
                         res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ word: word, definition: dictionary[word] }));
+                        res.end(JSON.stringify({ word: word, definition: dictionary[word], reqNum : getReqCounter }));
                     }
 
 
@@ -39,6 +42,7 @@ class Server {
                         let definition =q['definition'];
                         let resualt = '';
                         if (word != null && definition != null && dictionary[word] === undefined) {
+                            postReqCounter++;
                             dictionary[word] = definition;
                             res.writeHead(200, { 'Content-Type': 'text/plain' });
                             resualt= messages.userMessages.wordAdded;
@@ -46,7 +50,7 @@ class Server {
                             res.writeHead(201, { 'Content-Type': 'text/plain' });
                             resualt = messages.userMessages.wordExist;
                         }
-                        res.end(JSON.stringify({ message: resualt }));
+                        res.end(JSON.stringify({ message: resualt, reqNum : postReqCounter}));
                     });
                 }
 
