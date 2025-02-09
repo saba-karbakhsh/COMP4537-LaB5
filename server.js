@@ -32,17 +32,18 @@ class Server {
 
 
                 } else if (req.method === 'POST') {
+                    console.log("in postsss");
                     console.log(dictionary);
                     let body = "";
                     req.on('data', function (data) {
                         if (data != null)
                             body += data;
                     });
-
                     req.on('end', function () {
                         let q = JSON.parse(body);
                         let word = q['word'];
                         let definition =q['definition'];
+                        console.log("in p word:"+word);
                         let resualt = '';
                         if (word != null && definition != null && dictionary[word] === undefined) {
                             console.log("in post");
