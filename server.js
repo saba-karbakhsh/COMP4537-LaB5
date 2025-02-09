@@ -16,6 +16,7 @@ class Server {
             let q = url.parse(req.url, true);
 
             if (q.pathname === '/api/definitions') {
+                console.log(req.method);
                 if (req.method === 'GET') {
                     console.log(dictionary);
                     let word = q.query.word;
