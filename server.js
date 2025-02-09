@@ -45,7 +45,10 @@ class Server {
                         let definition =q['definition'];
                         let resualt = '';
                         if (word != null && definition != null && dictionary[word] === undefined) {
+                            console.log("in post");
                             dictionary[word] = definition;
+                            console.log("in post: "+ dictionary);
+                            console.log("in post: "+ dictionary[word]);
                             res.writeHead(200, { 'Content-Type': 'text/plain' });
                             resualt= messages.userMessages.wordAdded;
                         } else {
