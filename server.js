@@ -1,6 +1,7 @@
 const http = require('http');
 const url = require('url');
 let messages = require('./messages.js');
+let dictionary = {};
 
 
 class Server {
@@ -10,7 +11,6 @@ class Server {
 
     start() {
         http.createServer((req, res) => {
-            let dictionary = {};
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Access-Control-Allow-Methods', '*');
             let q = url.parse(req.url, true);
