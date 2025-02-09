@@ -16,13 +16,8 @@ class Server {
             let q = url.parse(req.url, true);
 
             if (q.pathname === '/api/definitions') {
-                console.log(req.method);
                 if (req.method === 'GET') {
-                    console.log(dictionary);
                     let word = q.query.word;
-                    console.log("word " + word);
-                    console.log("word2 " + dictionary[word]);
-
                     if ( dictionary[word] === undefined) {
                         res.writeHead(404, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({ message: messages.userMessages.wordNotFound }));
@@ -33,8 +28,6 @@ class Server {
 
 
                 } else if (req.method === 'POST') {
-                    console.log("in postsss");
-                    console.log(dictionary);
                     let body = "";
                     req.on('data', function (data) {
                         if (data != null)
@@ -44,13 +37,9 @@ class Server {
                         let q = JSON.parse(body);
                         let word = q['word'];
                         let definition =q['definition'];
-                        console.log("in p word:"+word);
                         let resualt = '';
                         if (word != null && definition != null && dictionary[word] === undefined) {
-                            console.log("in post");
                             dictionary[word] = definition;
-                            console.log("in post: "+ dictionary);
-                            console.log("in post: "+ dictionary[word]);
                             res.writeHead(200, { 'Content-Type': 'text/plain' });
                             resualt= messages.userMessages.wordAdded;
                         } else {
