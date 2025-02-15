@@ -1,6 +1,7 @@
 let http = require('http');
 let db = require('mysql2');
 let url = require('url');
+let messages = require('./messages');
 
 
 let connectionString = "mysql://doadmin:AVNS_9SRi_k8cAXyPWn39Gp7@db-mysql-tor1-19416-do-user-18794098-0.d.db.ondigitalocean.com:25060/defaultdb?ssl-mode=REQUIRED";
@@ -37,8 +38,7 @@ http.createServer(function (req, res) {
             let values = patientData.map(patient => [patient.name, patient.dateofbirth]);
             con.query(sql, [values], function (err, result) {
                 if (err) throw err;
-                res.write("Data was inserted successfully!");
-                res.end();
+                res.end(messages.userMessages.successfullInsert);
             });
         });
     } else if (q.pathname === "/lab5/api/v1/sql") {
@@ -52,24 +52,19 @@ http.createServer(function (req, res) {
                     res.end(JSON.stringify(result));
                     return;
                 }
-                res.writeHead(200, { 'Content-Type': 'application/json' , 'Access-Control-Allow-Origin': '*' });
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
                 if (req.method === "GET") {
                     res.end(JSON.stringify(result));
                 } else {
-                    res.end("Query executed successfully");
+                    res.end(messages.userMessages.successfulQuery);
                 }
             });
         } else {
             res.writeHead(400, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
-            res.end("Only GET and POST methods are allowed");
+            res.end(messages.userMessages.methodError);
         }
 
 
-    }
-
-    if (req.method === "drop" || req.method === "UPDATE") {
-        res.writeHead(400, { 'Content-Type': 'text/plain' });
-        res.write("Drop and update is not allowed");
     }
 
 }).listen(8080);

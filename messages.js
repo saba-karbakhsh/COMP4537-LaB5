@@ -1,6 +1,5 @@
 exports.userMessages ={
-    error :'404 Not Found',
-    wordNotFound: 'Word not found!',
-    wordExist: 'Word already exist!',
-    wordAdded: 'Word added!',
+    successfullInsert:"Data was inserted successfully!",
+    successfulQuery:"Query was executed successfully!",
+    methodError :"Only GET and POST methods are allowed"
 };
