@@ -10,15 +10,12 @@ con.connect(function (err) {
     if (err) throw err;
     console.log("Connected!");
 });
-con.query("DROP DATABASE IF EXISTS Clinic", function (err, result) {
-    if (err) throw err;
-    console.log("Database dropped");
-});
-con.query("CREATE DATABASE Clinic", function (err, result) {
+
+con.query("CREATE DATABASE IF NOT EXISTS Clinic", function (err, result) {
     if (err) throw err;
     console.log("Database created");
     con.query("USE Clinic", function (err, result) {
-        con.query("CREATE TABLE Patients (patientID INT(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth DATETIME)", function (err, result) {
+        con.query("CREATE TABLE IF NOT EXISTS Patients (patientID INT(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth DATETIME)", function (err, result) {
             if (err) throw err;
             console.log("Table created");
         });
