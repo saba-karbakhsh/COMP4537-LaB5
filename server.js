@@ -1,71 +1,78 @@
-const http = require('http');
-const url = require('url');
-let messages = require('./messages.js');
-let dictionary = {};
-let getReqCounter = 0;
-let postReqCounter = 0;
+let http = require('http');
+let db = require('mysql2');
+let url = require('url');
 
 
-class Server {
-    constructor() {
-        this.port = process.env.PORT || 3000;
-    }
+let connectionString = "mysql://doadmin:AVNS_9SRi_k8cAXyPWn39Gp7@db-mysql-tor1-19416-do-user-18794098-0.d.db.ondigitalocean.com:25060/defaultdb?ssl-mode=REQUIRED";
+let con = db.createConnection(connectionString);
 
-    start() {
-        http.createServer((req, res) => {
-            res.setHeader('Access-Control-Allow-Origin', '*');
-            res.setHeader('Access-Control-Allow-Methods', '*');
-            let q = url.parse(req.url, true);
-
-            if (q.pathname === '/api/definitions') {
-                if (req.method === 'GET') {
-                    let word = q.query.word;
-                    if ( dictionary[word] === undefined) {
-                        res.writeHead(404, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ message: messages.userMessages.wordNotFound }));
-                    } else {
-                        getReqCounter++;
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ word: word, definition: dictionary[word], reqNum : getReqCounter }));
-                    }
-
-
-                } else if (req.method === 'POST') {
-                    let body = "";
-                    req.on('data', function (data) {
-                        if (data != null)
-                            body += data;
-                    });
-                    req.on('end', function () {
-                        let q = JSON.parse(body);
-                        let word = q['word'];
-                        let definition =q['definition'];
-                        let resualt = '';
-                        if (word != null && definition != null && dictionary[word] === undefined) {
-                            postReqCounter++;
-                            dictionary[word] = definition;
-                            res.writeHead(200, { 'Content-Type': 'text/plain' });
-                            resualt= messages.userMessages.wordAdded;
-                        } else {
-                            res.writeHead(201, { 'Content-Type': 'text/plain' });
-                            resualt = messages.userMessages.wordExist;
-                        }
-                        res.end(JSON.stringify({ message: resualt, reqNum : postReqCounter}));
-                    });
-                }
-
-            } else {
-                res.writeHead(404, { 'Content-Type': 'text/html' });
-                res.end(`<h1>${messages.userMessages.error}</h1>`);
-            }
-
-        }).listen(this.port, () => {
-            console.log(`Server is running on port ${this.port}`);
+con.connect(function (err) {
+    if (err) throw err;
+    console.log("Connected!");
+});
+con.query("DROP DATABASE IF EXISTS Clinic", function (err, result) {
+    if (err) throw err;
+    console.log("Database dropped");
+});
+con.query("CREATE DATABASE Clinic", function (err, result) {
+    if (err) throw err;
+    console.log("Database created");
+    con.query("USE Clinic", function (err, result) {
+        con.query("CREATE TABLE Patients (patientID INT(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100), dateOfBirth DATETIME)", function (err, result) {
+            if (err) throw err;
+            console.log("Table created");
         });
+    });
+});
+http.createServer(function (req, res) {
+
+    let q = url.parse(req.url, true);
+    if (req.method === "POST" && q.pathname === "/insertPredefined") {
+        res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+        let body = '';
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+        req.on('end', () => {
+            let patientData = JSON.parse(body);
+            console.log(patientData);
+            let sql = "INSERT INTO Patients (name, dateOfBirth) VALUES ?";
+            let values = patientData.map(patient => [patient.name, patient.dateofbirth]);
+            con.query(sql, [values], function (err, result) {
+                if (err) throw err;
+                res.write("Data was inserted successfully!");
+                res.end();
+            });
+        });
+    } else if (q.pathname === "/lab5/api/v1/sql") {
+
+        let q = url.parse(req.url, true);
+        let sqlQuery = q.query.query;
+        if (req.method === "GET" || req.method === "POST") {
+            con.query(sqlQuery, function (err, result, fields) {
+                if (err) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(result));
+                    return;
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' , 'Access-Control-Allow-Origin': '*' });
+                if (req.method === "GET") {
+                    res.end(JSON.stringify(result));
+                } else {
+                    res.end("Query executed successfully");
+                }
+            });
+        } else {
+            res.writeHead(400, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+            res.end("Only GET and POST methods are allowed");
+        }
+
+
     }
 
-    
-}
+    if (req.method === "drop" || req.method === "UPDATE") {
+        res.writeHead(400, { 'Content-Type': 'text/plain' });
+        res.write("Drop and update is not allowed");
+    }
 
-const server = new Server();
-server.start();
+}).listen(8080);
