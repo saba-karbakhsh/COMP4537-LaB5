@@ -46,6 +46,7 @@ http.createServer(function (req, res) {
         let q = url.parse(req.url, true);
         let sqlQuery = q.query.query;
         if (req.method === "GET" || req.method === "POST") {
+            if(sqlQuery.toUpperCase().startsWith("SELECT") || sqlQuery.toUpperCase().startsWith("INSERT")) {
             con.query(sqlQuery, function (err, result, fields) {
                 if (err) {
                     res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -59,6 +60,7 @@ http.createServer(function (req, res) {
                     res.end(messages.userMessages.successfulQuery);
                 }
             });
+            }
         } else {
             res.writeHead(400, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
             res.end(messages.userMessages.methodError);
