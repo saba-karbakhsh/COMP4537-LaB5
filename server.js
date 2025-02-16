@@ -60,12 +60,11 @@ http.createServer(function (req, res) {
                     res.end(messages.userMessages.successfulQuery);
                 }
             });
-            }
-        } else {
+            }else {
             res.writeHead(400, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
             res.end(messages.userMessages.methodError);
         }
-
+        }
 
     }
 
